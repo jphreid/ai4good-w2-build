@@ -62,6 +62,8 @@ uv run streamlit run run/ui.py   --server.port 8503
 Try the **same** line in all three and watch it grow:
 > I'm 28. Irregular periods for 3 years, weight gain, and adult acne.
 
+**More to try:** see **`scenarios.md`** — varied prompts, multi-turn scripts, and guardrail probes, annotated for each version.
+
 **Stop:** press `Ctrl-C` in the terminal (Mac/Linux stops all three at once).
 
 ---
