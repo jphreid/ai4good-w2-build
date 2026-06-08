@@ -4,13 +4,28 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# 1. Check the key is in place.
-if [ ! -f .env ] || ! grep -q "^ANTHROPIC_API_KEY=sk-ant-" .env; then
-  echo "❌ No API key found."
-  echo "   Do this first:"
-  echo "     1. cp .env.example .env"
-  echo "     2. open .env and paste the key JP sent you (it starts with sk-ant-)"
+# 1. Check the key is in place — with a specific message for each failure.
+if [ ! -f .env ]; then
+  echo "❌ No .env file yet."
+  echo "   1. cp .env.example .env"
+  echo "   2. open .env and paste the key JP sent you (it starts with sk-ant-)"
   echo "   Then run ./start.sh again."
+  exit 1
+fi
+KEYLINE="$(grep '^ANTHROPIC_API_KEY=' .env || true)"
+if [ -z "$KEYLINE" ] || echo "$KEYLINE" | grep -q 'sk-ant-\.\.\.'; then
+  echo "❌ No key in .env yet (it's still the placeholder)."
+  echo "   Open .env, replace  sk-ant-...  with the real key JP sent you, and save."
+  echo "   Then run ./start.sh again."
+  exit 1
+fi
+if ! echo "$KEYLINE" | grep -q '^ANTHROPIC_API_KEY=sk-ant-'; then
+  echo "❌ That looks like the wrong kind of key."
+  echo "   This app needs an ANTHROPIC key, which starts with  sk-ant-"
+  if echo "$KEYLINE" | grep -q 'sk-proj-'; then
+    echo "   The key in .env starts with  sk-proj-  — that's an OpenAI key, not Anthropic."
+  fi
+  echo "   Open .env, paste your Anthropic key (sk-ant-...), and save. Then run ./start.sh again."
   exit 1
 fi
 
