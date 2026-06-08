@@ -4,25 +4,29 @@ Three versions of the same app, side by side. Paste a key, run one command, done
 
 ---
 
-## 1. Install the two tools (one time)
+## 1. Install uv (one time)
 
-- **uv** — runs the Python app.
-  - **Mac / Linux:** paste into a terminal:
-    ```
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
-  - **Windows:** see https://docs.astral.sh/uv/getting-started/installation/
-- **git** — gets the code: https://git-scm.com/downloads
-  *(Or just download the repo as a ZIP from GitHub → "Code" → "Download ZIP", and skip the `git clone` step.)*
+`uv` runs the Python app — it's the only thing you must install.
+- **Mac / Linux:** paste into a terminal:
+  ```
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **Windows:** see https://docs.astral.sh/uv/getting-started/installation/
 
 ---
 
-## 2. Get the code
+## 2. Get the code (pick ONE)
 
+**Option A — Download ZIP (easiest, no extra tools):**
+On the GitHub repo page → green **"Code"** button → **"Download ZIP"** → unzip it → open the unzipped folder in a terminal.
+
+**Option B — git clone** (if you have [git](https://git-scm.com/downloads)):
 ```
 git clone https://github.com/jphreid/symptomscout-versions.git
 cd symptomscout-versions
 ```
+
+Either way, you should end up in the `symptomscout-versions` folder in your terminal.
 
 ---
 
