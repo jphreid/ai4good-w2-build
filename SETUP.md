@@ -35,8 +35,13 @@ Either way, you should end up in the `symptomscout-versions` folder in your term
 ```
 cp .env.example .env
 ```
-Open **`.env`** in any text editor. Replace `sk-ant-...` with the key JP sent you. Save.
-*(It must start with `sk-ant-`. Don't share this file or commit it — it's already git-ignored.)*
+*(This command prints nothing — that's normal. It just creates the `.env` file with a placeholder.)*
+
+Now **open `.env`** in any text editor — it contains one line: `ANTHROPIC_API_KEY=sk-ant-...`. Replace the `sk-ant-...` placeholder with the key JP sent you, then **save**. This edit is the step that actually matters.
+
+*(The key must start with `sk-ant-`. Don't share or commit this file — it's already git-ignored.)*
+
+**On Windows**, `cp` may not exist — use `copy .env.example .env` instead, then edit `.env` the same way.
 
 ---
 
