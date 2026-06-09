@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building ML Apps — Workshop 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0C0D12; --card:#16171F; --card2:#1C1E28; --ink:#F3F4F8; --muted:#9498A8; --line:#262833;
+    --mint:#3CE6B0; --violet:#8B7CFF; --pink:#FF7EB6; --blue:#58A6FF; --amber:#FFC24B;
+    --disp:"Space Grotesk",system-ui,sans-serif; --sans:"Inter",system-ui,sans-serif;
+    --accent:var(--mint);            /* default (Open / Wrap) */
+  }
+  .jp{--accent:var(--blue)}          /* JP's half — Build/Eng */
+  .ro{--accent:var(--violet)}        /* Rohan's half — Design */
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#000;display:flex;align-items:center;justify-content:center;font-family:var(--sans);overflow:hidden}
+  .stage{position:relative;aspect-ratio:16/9;width:min(100vw,177.78vh);height:min(56.25vw,100vh);
+    background:radial-gradient(120% 120% at 80% -10%,#1a1530 0%,var(--bg) 55%);
+    color:var(--ink);container-type:size;overflow:hidden;border-radius:.6cqw}
+  .slide{position:absolute;inset:0;padding:6cqh 5cqw;display:none;flex-direction:column}
+  .slide.active{display:grid;animation:rise .45s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(1.5cqh)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-family:var(--disp);font-weight:600;font-size:1.4cqw;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--disp);font-weight:700;font-size:5cqw;line-height:1.0;letter-spacing:-.02em}
+  h1 em{font-style:normal;color:var(--accent)}
+  .head .eyebrow{display:block;margin-bottom:1.1cqh}
+  .head h1 em{font-style:normal;color:var(--accent)}
+  .bl{color:var(--blue)} .vi{color:var(--violet)} .mt{color:var(--mint)} .pk{color:var(--pink)} .am{color:var(--amber)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:2.2cqw;padding:4cqh 3cqw;
+    display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
+
+  /* ── shared accent strip (routes through --accent) ── */
+  .strip{grid-column:1 / -1;flex-direction:row;justify-content:flex-start;align-items:center;gap:2cqw;padding:2.8cqh 3cqw;
+    border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 16%,transparent),transparent),var(--card)}
+  .strip .arr{font-family:var(--disp);font-weight:700;font-size:2.6cqw;color:var(--accent);flex:none}
+  .strip h3{font-family:var(--disp);font-weight:600;font-size:2.1cqw;color:var(--accent);line-height:1.15}
+  .strip h3 b{color:var(--ink);font-weight:600}
+  .srcfoot{grid-column:1 / -1;display:flex;justify-content:flex-end;align-items:baseline;font-size:1.3cqw;color:var(--muted)}
+
+  /* ── dividers ── */
+  .divider{place-content:center;text-align:center;gap:0}
+  .divider .eyebrow{margin-bottom:3cqh}
+  .divider h1{font-size:9.5cqw}
+  .divider .rule{width:14cqw;height:.5cqh;background:var(--accent);border-radius:99px;margin:4cqh auto 0;box-shadow:0 0 3cqw var(--accent)}
+  .divider .tag{font-family:var(--disp);font-weight:600;font-size:2.4cqw;color:var(--muted);margin-top:2.4cqh;max-width:66cqw;justify-self:center;line-height:1.3}
+  .divider .contact{font-family:var(--disp);font-size:1.7cqw;color:var(--muted);margin-top:2.4cqh}
+  .divider blockquote{justify-self:center;max-width:64cqw;margin-top:3.5cqh;padding:3.4cqh 3.2cqw;text-align:left;
+    border-left:.6cqw solid var(--accent);border-radius:1.4cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card);
+    font-family:var(--disp);font-weight:600;font-size:2.6cqw;line-height:1.28;color:var(--ink)}
+  .divider blockquote em{color:var(--accent);font-style:normal}
+  .divider .chip{margin-top:2.6cqh;display:inline-block;justify-self:center;font-family:var(--disp);font-weight:600;font-size:1.5cqw;
+    color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+    background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:999px;padding:1cqh 1.8cqw}
+  .divider .dottrack{display:flex;gap:1.2cqw;justify-content:center;margin-top:3.4cqh;font-family:var(--disp);font-size:1.35cqw;color:var(--muted);flex-wrap:wrap}
+  .divider .dottrack span{border:1px solid #2a2c38;border-radius:999px;padding:.7cqh 1.2cqw}
+
+  /* ── 1 · title ── */
+  .title{grid-template-columns:1.45fr 1fr;grid-template-rows:1fr 1fr;gap:2.2cqw}
+  .title .hero{grid-row:1 / span 2;justify-content:flex-end;
+    background:radial-gradient(90% 80% at 18% 8%,rgba(139,124,255,.35),transparent 60%),var(--card)}
+  .title .hero h1{margin-top:1.4cqh;font-size:6.6cqw}
+  .title .hero .lede{font-size:2cqw;color:var(--muted);margin-top:2.4cqh;line-height:1.42;max-width:36cqw}
+  .title .fac{justify-content:center;align-items:flex-start;border:none}
+  .title .fac.jp{background:linear-gradient(135deg,var(--blue),#2D6FD0)}
+  .title .fac.ro{background:linear-gradient(135deg,var(--violet),#5B45E0)}
+  .title .fac .nm{font-family:var(--disp);font-weight:700;font-size:2.7cqw;color:#fff;line-height:1}
+  .title .fac .rl{color:rgba(255,255,255,.9);font-size:1.55cqw;margin-top:.9cqh}
+  .title .fac .chip{font-family:var(--disp);font-size:1.35cqw;color:rgba(255,255,255,.92);margin-top:1.4cqh;letter-spacing:.04em}
+
+  /* ── two-column compare (cmp) ── */
+  .cmp{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:1.8cqw}
+  .cmp .head{grid-column:1 / -1}
+  .cmp .col{justify-content:flex-start;gap:1.2cqh}
+  .cmp .col .k{font-family:var(--disp);font-weight:700;font-size:2.5cqw;color:var(--ink)}
+  .cmp .col p{color:var(--muted);font-size:1.8cqw;line-height:1.35}
+  .cmp .col.off{border-color:#2c2f3a}
+  .cmp .col.off .k{color:var(--muted)}
+  .cmp .col.on{border-color:color-mix(in srgb,var(--accent) 50%,transparent);
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card)}
+  .cmp .col.on .k{color:var(--accent)}
+  .cmp .col.alt{border-color:rgba(139,124,255,.5);background:linear-gradient(135deg,rgba(139,124,255,.12),transparent),var(--card)}
+  .cmp .col.alt .k{color:var(--violet)}
+  .cmp .col.bad{border-color:rgba(255,126,182,.42)} .cmp .col.bad .k{color:var(--pink)}
+  .cmp .col.good{border-color:rgba(60,230,176,.45);background:linear-gradient(135deg,rgba(60,230,176,.1),transparent),var(--card)} .cmp .col.good .k{color:var(--mint)}
+  .cmp blockquote.note{grid-column:1 / -1;margin:0;padding:2.4cqh 3cqw;border-left:.5cqw solid var(--accent);border-radius:1.2cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card);
+    font-family:var(--disp);font-weight:600;font-size:2cqw;line-height:1.25;color:var(--ink)}
+  .cmp blockquote.note em{color:var(--accent);font-style:normal}
+  .cmp blockquote.note cite{display:block;font-style:normal;font-size:1.35cqw;color:var(--muted);margin-top:1cqh;font-weight:400}
+
+  /* ── component grid (2×4 cards — the kitchen, mapped) ── */
+  .kgrid{grid-template-columns:1fr;grid-template-rows:auto 1fr;gap:2.6cqh}
+  .kgrid .kcards{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:1.4cqw}
+  .kc{background:var(--card);border:1px solid var(--line);border-radius:1.4cqw;padding:2cqh 1.7cqw;display:flex;flex-direction:column}
+  .kc .kn{font-family:var(--disp);font-weight:700;font-size:1.9cqw;color:var(--ink);line-height:1}
+  .kc .ka{font-family:var(--disp);font-weight:600;font-size:1.25cqw;color:var(--accent);margin-top:.5cqh;letter-spacing:.02em}
+  .kc .ke{font-size:1.3cqw;line-height:1.34;color:var(--muted);margin-top:1cqh}
+  .kc .kapp{font-family:var(--disp);font-weight:600;font-size:1.15cqw;color:var(--muted);margin-top:auto;padding-top:.9cqh;border-top:1px solid var(--line)}
+  .kc.hero{border-color:color-mix(in srgb,var(--accent) 55%,transparent);
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,transparent),transparent),var(--card)}
+  .kc.hero .kn{color:var(--accent)}
+  .kgrid .strip{grid-column:1 / -1}
+
+  /* ── single-column rows (agenda / lists / checks) ── */
+  .rows-slide{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;gap:2cqh}
+  .rowlist{display:flex;flex-direction:column;gap:1.3cqh;justify-content:center}
+  .rowlist .row{display:flex;align-items:center;gap:2cqw;background:var(--card);border:1px solid var(--line);border-radius:1.4cqw;padding:2cqh 2.6cqw}
+  .rowlist .row .tag{flex:none;font-family:var(--disp);font-weight:700;font-size:1.3cqw;letter-spacing:.14em;text-transform:uppercase;
+    border-radius:.7cqw;padding:.7cqh 1cqw}
+  .rowlist .row .tag.jpt{color:var(--blue);background:rgba(88,166,255,.12)}
+  .rowlist .row .tag.rot{color:var(--violet);background:rgba(139,124,255,.12)}
+  .rowlist .row .tag.bot{color:var(--mint);background:rgba(60,230,176,.12)}
+  .rowlist .row .name{flex:1;font-family:var(--disp);font-weight:600;font-size:2.2cqw}
+  .rowlist .row .name small{display:block;font-family:var(--sans);font-weight:400;font-size:1.45cqw;color:var(--muted);margin-top:.3cqh}
+  .rowlist .row .time{flex:none;font-family:var(--disp);font-size:1.6cqw;color:var(--muted)}
+  .rowlist .row.jp{border-color:color-mix(in srgb,var(--blue) 38%,transparent);background:linear-gradient(120deg,rgba(88,166,255,.1),transparent),var(--card)}
+  .rowlist .row.ro{border-color:color-mix(in srgb,var(--violet) 38%,transparent);background:linear-gradient(120deg,rgba(139,124,255,.1),transparent),var(--card)}
+  .rowlist .row.dim{opacity:.5}
+  .rowlist .row .num{flex:none;width:3.4cqw;height:3.4cqw;border-radius:.9cqw;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:1.7cqw;background:#20222c;color:var(--ink)}
+  .rowlist .row.on .num{background:var(--accent);color:#0C0D12}
+  .rows-slide .foot{grid-column:1 / -1;font-family:var(--disp);font-weight:600;font-size:1.7cqw;color:var(--muted);text-align:center}
+  .rows-slide .foot b{color:var(--accent)}
+
+  /* ── why-it-matters / map (key → value rows) ── */
+  .maplist{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;gap:2cqh}
+  .maplist .stack{display:flex;flex-direction:column;gap:1.6cqh;justify-content:center}
+  .maplist .map{display:flex;flex-direction:column;gap:1.05cqh}
+  .maplist .mrow{display:grid;align-items:center;gap:2cqw;background:var(--card);border:1px solid var(--line);border-radius:1.1cqw;padding:1.55cqh 2.4cqw}
+  .maplist .map.sm .mrow{grid-template-columns:13cqw 1fr}
+  .maplist .map.md .mrow{grid-template-columns:26cqw 1fr}
+  .maplist .map.lg .mrow{grid-template-columns:38cqw 1fr}
+  .maplist .map.kx .mrow{grid-template-columns:24cqw 1fr auto}
+  .maplist .mrow .kk{font-family:var(--disp);font-weight:500;font-style:italic;font-size:1.5cqw;color:var(--muted);text-align:right;white-space:nowrap}
+  .maplist .mrow .kk::before{content:"≈ ";font-style:normal;color:color-mix(in srgb,var(--accent) 70%,var(--muted))}
+  .maplist .mrow .key{font-family:var(--disp);font-weight:700;font-size:1.85cqw;color:var(--ink)}
+  .maplist .mrow .val{font-family:var(--disp);font-weight:600;font-size:1.8cqw;color:var(--accent)}
+  .maplist .mrow .val.plain{color:var(--ink);font-weight:500}
+  .maplist .mrow .val code, .maplist .mrow .key code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+  .maplist .leadq{margin:0;padding:2.4cqh 3cqw;border-left:.5cqw solid var(--accent);border-radius:1.2cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card);
+    font-family:var(--disp);font-weight:600;font-size:2.05cqw;line-height:1.28;color:var(--ink)}
+
+  /* ── statement slide ── */
+  .statement{grid-template-rows:auto auto 1fr auto;gap:2.4cqh;align-content:center}
+  .statement h1{font-size:6cqw}
+  .statement .leadq{justify-self:start;max-width:84cqw;margin:0;padding:3cqh 3.2cqw;border-left:.5cqw solid var(--accent);border-radius:1.4cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card);
+    font-family:var(--disp);font-weight:600;font-size:2.4cqw;line-height:1.3;color:var(--ink)}
+
+  /* ── big-stat slide ── */
+  .stat{grid-template-rows:auto auto auto auto;gap:2.2cqh;align-content:center}
+  .statbox{align-items:center;justify-content:center;text-align:center;padding:4.5cqh 3cqw;
+    border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 16%,transparent),transparent),var(--card)}
+  .statbox .big{font-family:var(--disp);font-weight:700;font-size:8.5cqw;color:var(--accent);line-height:.95}
+  .statbox .cap{font-family:var(--disp);font-weight:600;font-size:2.3cqw;color:var(--ink);margin-top:1.2cqh;max-width:62cqw;line-height:1.2}
+  .stat .twist{font-family:var(--disp);font-weight:600;font-size:2.1cqw;color:var(--muted);text-align:center;line-height:1.35;max-width:80cqw;justify-self:center}
+  .stat .twist b{color:var(--accent)}
+
+  /* ── framed-quote hero ── */
+  .qhero{place-content:center;text-align:center;gap:0}
+  .qhero .eyebrow{margin-bottom:2.8cqh}
+  .qhero blockquote{justify-self:center;max-width:78cqw;padding:4.5cqh 4cqw;text-align:left;border-left:.65cqw solid var(--accent);border-radius:1.6cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent),var(--card);
+    font-family:var(--disp);font-weight:600;font-size:3.1cqw;line-height:1.28;color:var(--ink)}
+  .qhero blockquote em{color:var(--accent);font-style:normal}
+  .qhero .land{font-family:var(--disp);font-weight:600;font-size:2.2cqw;color:var(--muted);margin-top:3.4cqh;max-width:66cqw;justify-self:center;line-height:1.3}
+  .qhero .land b{color:var(--accent)}
+  .qhero .src{margin-top:2.6cqh;font-size:1.35cqw;color:var(--muted)}
+
+  /* ── clip (media) ── */
+  .clip{place-content:center;text-align:center;gap:0}
+  .clip .well{justify-self:center;width:74cqw;height:50cqh;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:2cqw;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent),#0a0b10;display:grid;place-items:center;position:relative;gap:1.6cqh}
+  .clip .well .play{font-size:5cqw;color:var(--accent);line-height:1}
+  .clip .well video{width:100%;height:100%;object-fit:contain;border-radius:2cqw;background:#000}
+  .clip .well .badge{position:absolute;top:2.2cqh;left:2.4cqw;font-family:var(--disp);font-weight:600;font-size:1.35cqw;color:var(--muted);letter-spacing:.16em;text-transform:uppercase}
+  .clip .well .inner{font-family:var(--disp);font-weight:600;font-size:1.75cqw;color:var(--ink);max-width:54cqw;line-height:1.4}
+  .clip .well .inner span{color:var(--muted);font-weight:500}
+  .clip .cap{font-family:var(--disp);font-weight:600;font-size:2.3cqw;color:var(--ink);margin-top:3cqh;max-width:64cqw;justify-self:center;line-height:1.3}
+
+  /* ── demo (live frame) ── */
+  .demo{grid-template-rows:auto 1fr auto;gap:3cqh;align-content:center}
+  .demo .band{font-family:var(--disp);font-weight:700;font-size:2.3cqw;letter-spacing:.06em;color:var(--accent);text-align:center;
+    border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:1.4cqw;padding:2.2cqh 3cqw;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent),var(--card)}
+  .demo .band .dotlive{display:inline-block;width:1.4cqw;height:1.4cqw;border-radius:50%;background:var(--accent);margin-right:1cqw;vertical-align:middle;box-shadow:0 0 2cqw var(--accent)}
+  .demo .steprail{display:flex;flex-direction:column;gap:1.5cqh;max-width:72cqw;width:100%;justify-self:center}
+  .demo .step{display:flex;align-items:center;gap:2cqw;font-family:var(--disp);font-weight:600;font-size:2.05cqw;color:var(--ink);
+    border:1px solid var(--line);border-radius:1.2cqw;padding:2cqh 2.6cqw;background:var(--card)}
+  .demo .step .n{flex:none;width:3.2cqw;height:3.2cqw;border-radius:.8cqw;display:grid;place-items:center;background:#20222c;color:var(--ink);font-weight:700;font-size:1.6cqw}
+  .demo .step .r{margin-left:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.6cqw;color:var(--accent)}
+  .demo .note{text-align:center;font-family:var(--disp);font-size:1.5cqw;color:var(--muted)}
+  .demo .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ── baton (blue → violet flip) ── */
+  .baton{grid-template-rows:auto 1fr auto;gap:2.6cqh;align-content:center}
+  .baton h1{font-size:5.4cqw;text-align:center} .baton h1 em{color:var(--blue);font-style:normal}
+  .baton .buried{max-width:82cqw;justify-self:center;background:var(--card);border:1px solid var(--line);border-radius:1.6cqw;
+    padding:3.4cqh 3.4cqw;font-family:var(--sans);font-size:1.95cqw;line-height:1.55;color:var(--muted)}
+  .baton .buried mark{background:rgba(88,166,255,.2);color:var(--blue);padding:.08em .3em;border-radius:.3em;font-weight:600}
+  .baton .flip{flex-direction:row;justify-content:space-between;align-items:center;gap:2cqw;padding:3cqh 3.5cqw;
+    border:1px solid rgba(139,124,255,.5);border-radius:1.6cqw;
+    background:linear-gradient(120deg,rgba(88,166,255,.18),rgba(139,124,255,.24)),var(--card)}
+  .baton .flip h3{font-family:var(--disp);font-weight:600;font-size:2.2cqw;color:var(--ink);line-height:1.2}
+  .baton .flip .to{flex:none;font-family:var(--disp);font-weight:700;font-size:2.8cqw;color:var(--violet)}
+
+  /* ── lifecycle phase rail ── */
+  .phases{grid-template-rows:auto 1fr auto;gap:2cqh}
+  .phaserail{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5cqw}
+  .phasecard{justify-content:flex-start;gap:1.1cqh;padding:3.4cqh 2cqw;
+    border-color:rgba(139,124,255,.28);background:linear-gradient(160deg,rgba(139,124,255,.1),transparent),var(--card)}
+  .phasecard:nth-child(2){background:linear-gradient(160deg,rgba(139,124,255,.16),transparent),var(--card)}
+  .phasecard:nth-child(3){background:linear-gradient(160deg,rgba(139,124,255,.22),transparent),var(--card)}
+  .phasecard:nth-child(4){background:linear-gradient(160deg,rgba(139,124,255,.28),transparent),var(--card)}
+  .phasecard .ph{font-family:var(--disp);font-weight:700;font-size:1.55cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+  .phasecard p{color:var(--muted);font-size:1.6cqw;line-height:1.3}
+
+  /* mini rail tracker (on finding slides) */
+  .railmini{display:flex;gap:.7cqw;margin-top:.6cqh}
+  .railmini span{font-family:var(--disp);font-weight:600;font-size:1.1cqw;letter-spacing:.06em;text-transform:uppercase;color:#4a4d5c;border:1px solid #2a2c38;border-radius:999px;padding:.45cqh .9cqw}
+  .railmini span.on{color:var(--violet);border-color:color-mix(in srgb,var(--violet) 50%,transparent);background:color-mix(in srgb,var(--violet) 12%,transparent)}
+
+  /* exemplar UI mock (onboarding) */
+  .exemplar{grid-template-rows:auto 1fr auto;gap:2cqh;align-content:center}
+  .exemplar .mock{justify-self:center;max-width:70cqw;width:100%;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:1.8cqw;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent),var(--card);padding:5cqh 4cqw;text-align:center;gap:1.4cqh;display:flex;flex-direction:column}
+  .exemplar .mock .first{font-family:var(--disp);font-weight:600;font-size:1.4cqw;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+  .exemplar .mock .does{font-family:var(--disp);font-weight:700;font-size:3cqw;color:var(--ink);line-height:1.15}
+  .exemplar .mock .does em{color:var(--accent);font-style:normal}
+  .exemplar .pts{display:flex;gap:2cqw;justify-content:center;font-family:var(--disp);font-weight:600;font-size:1.6cqw;color:var(--muted);flex-wrap:wrap}
+
+  /* ── spine recap (gradient) ── */
+  .spine{grid-template-rows:repeat(4,auto);gap:3cqh;align-content:center;text-align:center}
+  .spine h1{font-size:5cqw}
+  .spine .arrowline{font-family:var(--disp);font-weight:700;font-size:3cqw;line-height:1.3;justify-self:center;max-width:86cqw;
+    padding:4cqh 3cqw;border-radius:1.8cqw;border:1px solid rgba(139,124,255,.4);
+    background:linear-gradient(120deg,rgba(88,166,255,.16),rgba(139,124,255,.18)),var(--card)}
+  .spine .two{display:flex;gap:2cqw;justify-content:center;flex-wrap:wrap;font-family:var(--disp);font-weight:600;font-size:2cqw;color:var(--muted)}
+  .spine .two b{color:var(--ink)}
+
+  /* ── code (appendix) ── */
+  .code-slide{grid-template-rows:auto 1fr auto;gap:2cqh}
+  .codecard{background:#0a0b10;border:1px solid var(--line);border-radius:1.4cqw;padding:3cqh 3cqw;justify-content:flex-start;overflow:auto}
+  .codecard pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:1.5cqw;line-height:1.55;color:var(--ink);white-space:pre}
+  .codecard .cm{color:var(--muted)} .codecard .kw{color:var(--violet)} .codecard .st{color:var(--mint)}
+
+  /* ── chrome ── */
+  .hud{position:fixed;bottom:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 26px;
+    font-family:var(--disp);font-size:11px;color:#5a5d70;letter-spacing:.1em}
+  .hud b{color:var(--mint)}
+  .nav{position:fixed;top:14px;right:20px;z-index:30;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-family:var(--disp)}
+  .nav .stages{display:flex;gap:5px}
+  .nav .stg{appearance:none;border:none;padding:0;cursor:pointer;height:5px;width:15px;border-radius:99px;font-size:0;
+    background:color-mix(in srgb, var(--c) 28%, transparent);transition:width .18s,background .18s}
+  .nav .stg:hover{background:color-mix(in srgb, var(--c) 60%, transparent)}
+  .nav .stg.on{width:30px;background:var(--c)}
+  .nav .dots{display:flex;gap:6px;align-items:center;height:8px}
+  .nav .dot{width:6px;height:6px;border-radius:99px;background:#3a3d4d;cursor:pointer;transition:width .18s,background .18s;padding:0;border:none}
+  .nav .dot:hover{background:#5a5d70}
+  .nav .dot.on{width:20px;background:var(--cd)}
+  .overview{position:fixed;inset:0;z-index:50;background:#06070a;overflow-y:auto;overflow-x:hidden;padding:28px 28px 60px;
+    display:none;grid-template-columns:repeat(auto-fill,300px);gap:18px;justify-content:center;align-content:start}
+  .overview.show{display:grid}
+  .overview-hint{position:fixed;top:12px;right:18px;z-index:51;font-family:var(--disp);font-size:11px;letter-spacing:.12em;color:#9498A8;background:#06070a;padding:4px 9px;border-radius:6px}
+  .thumb{position:relative;width:300px;height:168.75px;border-radius:10px;overflow:visible;cursor:pointer;border:2px solid #20222c;background:#0C0D12;transition:border-color .15s,transform .15s}
+  .thumb:hover{transform:translateY(-3px)}
+  .thumb.cur{border-color:var(--mint)}
+  .thumb .scaler{position:absolute;top:0;left:0;width:1280px;height:720px;container-type:size;
+    transform:scale(.234375);transform-origin:top left;color:var(--ink);border-radius:43px;overflow:hidden;
+    background:radial-gradient(120% 120% at 80% -10%,#1a1530 0%,var(--bg) 55%)}
+  .thumb .scaler .slide{display:grid!important;animation:none!important;position:absolute;inset:0}
+  .thumb .num{position:absolute;top:-17px;left:3px;z-index:2;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.04em;color:rgba(255,255,255,.42)}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- ════ ACT 0 · OPEN (JP) ════ -->
+
+  <!-- 1 · TITLE -->
+  <section class="slide title">
+    <div class="card hero">
+      <span class="eyebrow">AI4Good Lab 2026 · Workshop 2</span>
+      <h1>Building ML Apps</h1>
+      <p class="lede">From an eval spec to a working, <em>usable</em> app — with Claude as the harness.</p>
+    </div>
+    <div class="card fac jp"><div class="nm">JP Reid</div><div class="rl">Principal PM · Microsoft</div></div>
+    <div class="card fac ro"><div class="nm">Rohan D'Souza</div><div class="rl">Senior UI Designer · Microsoft</div></div>
+  </section>
+
+  <!-- 2 · WHERE WE LEFT OFF -->
+  <section class="slide cmp">
+    <div class="head"><span class="eyebrow">Where we left off</span><h1>One story, <em>two halves</em>.</h1></div>
+    <div class="card col off"><span class="k">June 1</span><p><b>requirement → rubric → eval</b></p><p>"You specified it when you can <em>check</em> it."</p></div>
+    <div class="card col on"><span class="k">Today</span><p><b>eval → green → surfaced</b></p><p>You build it — <em>and</em> make it usable by a person.</p></div>
+    <div class="card strip"><span class="arr">▸</span><h3>The eval set is the <b>contract carried across both days.</b></h3></div>
+  </section>
+
+  <!-- 3 · WHAT TODAY IS -->
+  <section class="slide rows-slide">
+    <div class="head"><span class="eyebrow">Two builders · one running app · 90 min</span><h1><em>Green isn't done.</em></h1></div>
+    <div class="rowlist">
+      <div class="row jp"><span class="tag jpt">JP</span><span class="name">Harness theory<small>The structure around the model — 5 ideas, properly</small></span><span class="time">15 min</span></div>
+      <div class="row jp"><span class="tag jpt">JP</span><span class="name">Live 🐢→🚶 · red eval → green<small>A failing requirement, fixed by hand</small></span><span class="time">12 min</span></div>
+      <div class="row ro"><span class="tag rot">Rohan</span><span class="name">Design for uncertainty + live 🚶→🏃<small>Make green usable — beyond June 1</small></span><span class="time">30 min</span></div>
+      <div class="row"><span class="tag bot">Both</span><span class="name">Wrap + take it home</span><span class="time">5 min</span></div>
+    </div>
+    <div class="foot">~25 min of <b>questions</b>, woven in and protected at the end.</div>
+  </section>
+
+  <!-- ════ ACT 1 · HARNESS THEORY (JP / blue) ════ -->
+
+  <!-- 4 · THEORY DIVIDER -->
+  <section class="slide divider jp">
+    <span class="eyebrow">The harness</span>
+    <h1>Five ideas. <em>15 minutes.</em></h1>
+    <blockquote>The build that comes next depends on <em>all five</em>. We cover them properly, not in passing.</blockquote>
+    <div class="dottrack"><span>chef vs kitchen</span><span>durable state + ratchet</span><span>generator / evaluator</span><span>workflow vs agent</span><span>evals as contract</span></div>
+  </section>
+
+  <!-- 5 · CHEF vs KITCHEN (the harness, mapped — 2×4) -->
+  <section class="slide kgrid jp">
+    <div class="head"><span class="eyebrow">Idea 1 · Chef vs kitchen</span><h1>The model is the chef. The kitchen is <em>everything else</em>.</h1></div>
+    <div class="kcards">
+      <div class="kc hero"><span class="kn">Chef</span><span class="ka">the model</span><span class="ke">Rented, brilliant — forgets between shifts. Swappable.</span><span class="kapp">🐢🚶🏃 Sonnet · agentic in 🏃</span></div>
+      <div class="kc"><span class="kn">Pantry</span><span class="ka">the tools</span><span class="ke">What the chef can reach for.</span><span class="kapp">🚶 knowledge base → 🏃 + PubMed</span></div>
+      <div class="kc"><span class="kn">Prep counter</span><span class="ka">the context</span><span class="ke">What the model sees this turn.</span><span class="kapp">🐢 chat → 🏃 + tool results</span></div>
+      <div class="kc"><span class="kn">Recipe cards</span><span class="ka">durable state</span><span class="ke">Conventions + decisions, on disk.</span><span class="kapp">🐢🚶🏃 the repo · 🏃 adds evals/</span></div>
+      <div class="kc"><span class="kn">Expediter</span><span class="ka">the agent loop</span><span class="ke">Calls the next step; holds, then fires.</span><span class="kapp">🏃 only — the loop that picks PubMed</span></div>
+      <div class="kc"><span class="kn">Tasting station</span><span class="ka">the evals</span><span class="ke">A separate taster checks every plate. The heart of today.</span><span class="kapp">the same evals gate 🐢🚶🏃</span></div>
+      <div class="kc"><span class="kn">Health inspector</span><span class="ka">the guardrails</span><span class="ke">No diagnosis; emergencies escalate.</span><span class="kapp">🐢 emergency → 🚶🏃 + no-diagnosis, cite</span></div>
+      <div class="kc"><span class="kn">Plating</span><span class="ka">the UI</span><span class="ke">What the patient sees and trusts. Rohan's half.</span><span class="kapp">🐢 chat → 🏃 + sources panel</span></div>
+    </div>
+  </section>
+
+  <!-- 6 · WHY THE HARNESS MATTERS -->
+  <section class="slide maplist jp">
+    <div class="head"><span class="eyebrow">Why it matters</span><h1>"Build me SymptomScout." → smart, and <em class="pk">unusable</em>.</h1></div>
+    <div class="map md kx">
+      <div class="mrow"><span class="key">what "good" means</span><span class="val">→ the evals</span><span class="kk">the tasting station</span></div>
+      <div class="mrow"><span class="key">where files go</span><span class="val"><code>→ CLAUDE.md</code></span><span class="kk">the house rules</span></div>
+      <div class="mrow"><span class="key">what tools it can call</span><span class="val"><code>→ .mcp.json</code></span><span class="kk">the pantry list</span></div>
+      <div class="mrow"><span class="key">what's already decided</span><span class="val">→ the repo</span><span class="kk">the recipe box</span></div>
+    </div>
+    <div class="card strip"><span class="arr">▸</span><h3>The harness is how you <b>encode all of that</b> so the model can act on it.</h3></div>
+  </section>
+
+  <!-- 7 · DURABLE STATE + CONTEXT RESET -->
+  <section class="slide maplist jp">
+    <div class="head"><span class="eyebrow">Idea 2 · Durable state</span><h1>The chef forgets. The kitchen <em>remembers</em>.</h1></div>
+    <div class="stack">
+      <blockquote class="leadq">Every session starts blank — the model doesn't remember yesterday. If the app's reality lives only in the chat, you re-explain it forever. So the kitchen keeps <em>books</em>: push it to disk.</blockquote>
+      <div class="map sm">
+        <div class="mrow"><span class="key">conventions</span><span class="val"><code>CLAUDE.md</code></span></div>
+        <div class="mrow"><span class="key">tests</span><span class="val"><code>evals/</code></span></div>
+        <div class="mrow"><span class="key">tools</span><span class="val"><code>.mcp.json</code></span></div>
+        <div class="mrow"><span class="key">decisions</span><span class="val">commits &amp; code</span></div>
+      </div>
+    </div>
+    <div class="srcfoot" style="justify-content:space-between"><span>🐢🚶🏃 every version reads the same repo — 🏃 adds <code>evals/</code></span><span>a new <em class="bl">build session</em> reads the books — context resets, not compaction</span></div>
+  </section>
+
+  <!-- 8 · THE RATCHET -->
+  <section class="slide statement jp">
+    <span class="eyebrow">Idea 2 (cont.) · The ratchet</span>
+    <h1>A green eval <em>stays green</em>.</h1>
+    <blockquote class="leadq">Each new feature ships only if the <em>whole</em> suite still passes — so you never break an old requirement to land a new one. <em>Like a dish that's cleared the tasting station: cleared for good.</em></blockquote>
+    <div class="card strip" style="border-color:rgba(255,126,182,.5);background:linear-gradient(120deg,rgba(255,126,182,.16),transparent),var(--card)"><span class="arr" style="color:var(--pink)">▸</span><h3 style="color:var(--pink)">If a new change can break a passing eval <b>without anyone noticing</b>, you have <b>no ratchet</b> — the test suite is what notices.</h3></div>
+    <div class="srcfoot" style="justify-content:center;margin-top:.6cqh">🐢🚶🏃 the same 5 evals gate every version — a phase ships only if it still passes the ones before</div>
+  </section>
+
+  <!-- 9 · GENERATOR / EVALUATOR SPLIT -->
+  <section class="slide cmp jp">
+    <div class="head"><span class="eyebrow">Idea 3 · Two models, not one</span><h1>Separate the builder from the <em class="vi">judge</em>.</h1></div>
+    <div class="card col on"><span class="k">Generator</span><p><b>Sonnet</b> writes the app's answer.</p></div>
+    <div class="card col alt"><span class="k">Evaluator</span><p><b>Opus</b> — different, stronger. Decides if it's good. Votes 3–5×, majority.</p></div>
+    <blockquote class="note">The chef doesn't taste their own plate — there's a <em>separate taster</em> on the pass.<cite>"Separating the agent doing the work from the agent judging it proves to be a strong lever." — Anthropic, Harness Design for Long-Running Apps (2026) · a model grading its own work always says "looks great."</cite></blockquote>
+    <div class="srcfoot" style="justify-content:center">🏃 the cook = the app's Sonnet · the taster = <code>judge()</code> on a second pass (Opus)</div>
+  </section>
+
+  <!-- 10 · CLIP A9 -->
+  <section class="slide clip jp">
+    <div class="well">
+      <span class="badge">Clip A9 · ~90s</span>
+      <video src="../recordings/Clip%20A9.mov" controls preload="metadata" playsinline></video>
+    </div>
+    <div class="cap">"You're about to watch me do this by hand. Here's the harness <em>running itself</em>." <span style="color:var(--muted);font-weight:500">— the "Ralph loop" (Geoffrey Huntley / community)</span></div>
+  </section>
+
+  <!-- 11 · WORKFLOW vs AGENT -->
+  <section class="slide cmp jp">
+    <div class="head"><span class="eyebrow">Idea 4 · Workflow vs agent</span><h1>The biggest design choice <em>today</em>.</h1></div>
+    <div class="card col off"><span class="k">Workflow</span><p>You set the steps.</p><p>Predictable · cheap to debug · easy to evaluate.</p></div>
+    <div class="card col alt"><span class="k">Agent</span><p>It picks its own steps + tools.</p><p>Flexible · hard to debug · harder to evaluate.</p></div>
+    <div class="card strip"><span class="arr">▸</span><h3>A fixed <b>prix-fixe menu</b> vs a chef who <b>improvises off the pantry.</b> &nbsp; Use the simplest thing that works — 🐢🚶 = workflow · 🏃 = agent.</h3></div>
+    <div class="srcfoot" style="justify-content:space-between"><span>🐢🚶 one-shot workflows · 🏃 the loop that <b>chooses</b> PubMed</span><span>Anthropic, Building Effective Agents (Dec 2024)</span></div>
+  </section>
+
+  <!-- 12 · EVALS ARE THE CONTRACT -->
+  <section class="slide maplist jp">
+    <div class="head"><span class="eyebrow">Idea 5 · Evals are the contract</span><h1>Agree what <em>good tastes like</em> — before service.</h1></div>
+    <div class="map md kx">
+      <div class="mrow"><span class="key">Generator</span><span class="val plain">Sonnet, editing the app</span><span class="kk">the cook</span></div>
+      <div class="mrow"><span class="key">Evaluator</span><span class="val plain"><code>judge()</code> on Opus, voting</span><span class="kk">the taster</span></div>
+      <div class="mrow"><span class="key">Sprint contract</span><span class="val"><code>evals/evals.py</code></span><span class="kk">the standard card</span></div>
+    </div>
+    <div class="card strip"><span class="arr">▸</span><h3>The tasting station needs a <b>standard</b> — and it's the evals you wrote June 1. You invent <b>no new requirements</b> today.</h3></div>
+    <div class="srcfoot" style="justify-content:center;margin-top:.6cqh">🐢🚶🏃 the same 5 evals gate every version — the citation one is what we turn green live</div>
+  </section>
+
+  <!-- 13 · WHERE IS THE HARNESS? -->
+  <section class="slide maplist jp">
+    <div class="head"><span class="eyebrow">So — where is the harness?</span><h1>Not in the model call. In the <em>loop around it</em>.</h1></div>
+    <div class="map sm kx">
+      <div class="mrow"><span class="key">spec</span><span class="val"><code>evals/evals.py</code></span><span class="kk">the standard card</span></div>
+      <div class="mrow"><span class="key">generator</span><span class="val"><code>app/agent.py</code> + Sonnet</span><span class="kk">the cook</span></div>
+      <div class="mrow"><span class="key">evaluator</span><span class="val"><code>judge()</code> on Opus, 5×</span><span class="kk">the taster</span></div>
+      <div class="mrow"><span class="key">state</span><span class="val plain">the files, on disk</span><span class="kk">the recipe box</span></div>
+      <div class="mrow"><span class="key">ratchet</span><span class="val plain">pytest 4 → 5, and it stays</span><span class="kk">the one-way pass</span></div>
+      <div class="mrow"><span class="key">the loop</span><span class="val">red → fix → green &nbsp;(next!)</span><span class="kk">the kitchen at work</span></div>
+    </div>
+    <div class="card strip"><span class="arr">▸</span><h3>You rent the chef. You <b>build the kitchen</b> — the model is what you don't control, the harness is what you <b>do</b>.</h3></div>
+  </section>
+
+  <!-- ════ ACT 2 · LIVE CRAWL→WALK (JP) ════ -->
+
+  <!-- 14 · LIVE: THE HARNESS, BY HAND -->
+  <section class="slide demo jp">
+    <div class="band"><span class="dotlive"></span>LIVE · 🐢→🚶 &nbsp; RED → GREEN</div>
+    <div class="steprail">
+      <div class="step"><span class="n">1</span>Run the contract<span class="r">4 ✓ &nbsp;1 ✗</span></div>
+      <div class="step"><span class="n">2</span>Read the failure → add one line to the system prompt</div>
+      <div class="step"><span class="n">3</span>Re-run → green, and it stays green<span class="r">5 ✓</span></div>
+    </div>
+    <div class="note">Commands, prompts &amp; fallback live in <code>demo-runsheet.md</code> — kick off step 1's pytest during the prior slide (~75s).</div>
+  </section>
+
+  <!-- 15 · THE BATON -->
+  <section class="slide baton">
+    <h1>It cites sources <em>now</em>.</h1>
+    <div class="buried">…this could point to <b>PCOS</b>, a <b>thyroid</b> issue, or <b>insulin resistance</b>. <mark>Source: ACOG guidance on PCOS</mark> — and you may also want to ask about iron levels, sleep, and recent stress, since those can…</div>
+    <div class="card flip"><h3>Green in a test ≠ visible to a scared person in a waiting room.<br>That's a <b>design</b> problem now.</h3><span class="to">→ Rohan</span></div>
+  </section>
+
+  <!-- ════ ACT 3 · DESIGN FOR UNCERTAINTY (Rohan / violet) ════ -->
+
+  <!-- 16 · DESIGN GOAL (Rohan section divider) -->
+  <section class="slide divider ro">
+    <span class="eyebrow">Rohan D'Souza · Senior UI Designer · Microsoft</span>
+    <h1>We made it work. Now make it <em>work better</em>.</h1>
+    <blockquote>The model now cites a source. My job: make a stressed person actually <em>trust</em> it — or correct it.</blockquote>
+    <div class="chip">Builds on June 1 — not a repeat</div>
+  </section>
+
+  <!-- 17 · /design-critic — Rohan's close (his own design slides run live before this) -->
+  <section class="slide rows-slide ro">
+    <div class="head"><span class="eyebrow">The review board · the W1 promise, now run</span><h1>Design has a rubric, too. <em>/design-critic</em></h1></div>
+    <div class="rowlist">
+      <div class="row dim"><span class="num">1</span><span class="name">Confidence display<small>you know this from June 1 — name-check, don't re-teach</small></span></div>
+      <div class="row dim"><span class="num">2</span><span class="name">Graceful degradation<small>June 1 — name-check</small></span></div>
+      <div class="row on"><span class="num">3</span><span class="name">Plain language</span></div>
+      <div class="row on"><span class="num">4</span><span class="name">Accessibility</span></div>
+      <div class="row on"><span class="num">5</span><span class="name">Humane refusal</span></div>
+    </div>
+    <div class="foot">It <b>fails a bare UI</b> on plain language, accessibility, humane refusal — and cites <b>PAIR + Microsoft HAX</b>. Checkable, just like the evals.</div>
+  </section>
+
+  <!-- 18 · CLIP A10 (PLACEHOLDER — JP to record the ~90s video; Rohan's call whether to include. Drop the "placeholder"/"to record" markers once the MP4 is wired.) -->
+  <section class="slide clip ro">
+    <div class="well">
+      <span class="badge">Clip A10 · ~90s · placeholder</span>
+      <span class="play">▶</span>
+      <span class="inner">An agent driving the <span>rendered</span> app via Playwright:<br>sources panel renders · disclaimer persists · emergency is unmissable.</span>
+    </div>
+    <div class="cap">"An eval checks the text. This checks what the <em>person actually sees</em>." <span style="color:var(--muted);font-weight:500">— optional closing clip · JP to record · Rohan's call</span></div>
+  </section>
+</div>
+
+<div id="overview" class="overview"></div>
+<div id="ovhint" class="overview-hint" style="display:none">click a slide · esc to close</div>
+<div class="nav" id="nav"></div>
+<div class="hud"><span>Building ML Apps · Workshop 2</span><span><b id="cur">1</b> / <b id="tot">18</b> · ← → · 1–3 jumps · esc=overview</span></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];let i=0;
+  const ov=document.getElementById('overview'), ovhint=document.getElementById('ovhint'), nav=document.getElementById('nav');
+
+  // section map: [start,end] 0-based inclusive; c = section accent
+  const SECTIONS=[
+    {label:'Open', c:'#3CE6B0', start:0,  end:2 },
+    {label:'JP',   c:'#58A6FF', start:3,  end:14},
+    {label:'Rohan',c:'#8B7CFF', start:15, end:17},
+  ];
+  const STAGE_KEYS={'1':0,'2':1,'3':2}; // number keys jump to a section start
+  const sectionOf=n=>SECTIONS.findIndex(s=>n>=s.start&&n<=s.end);
+  const slideFromHash=()=>{const n=Number.parseInt(location.hash.slice(1),10);return Number.isInteger(n)&&n>=1&&n<=slides.length?n-1:0;};
+
+  const stagesEl=document.createElement('div'); stagesEl.className='stages';
+  const dotsEl=document.createElement('div'); dotsEl.className='dots';
+  SECTIONS.forEach((s)=>{
+    const b=document.createElement('button'); b.className='stg'; b.style.setProperty('--c',s.c);
+    b.title=s.label; b.textContent=s.label;
+    b.addEventListener('click',()=>show(s.start));
+    stagesEl.appendChild(b);
+  });
+  nav.append(stagesEl,dotsEl);
+  let dotsSection=-1;
+  const updateNav=()=>{
+    const si=sectionOf(i), sec=SECTIONS[si];
+    [...stagesEl.children].forEach((b,x)=>b.classList.toggle('on',x===si));
+    if(si!==dotsSection){
+      dotsSection=si; dotsEl.innerHTML=''; dotsEl.style.setProperty('--cd',sec.c);
+      for(let n=sec.start;n<=sec.end;n++){
+        const d=document.createElement('button'); d.className='dot';
+        d.addEventListener('click',()=>show(n)); dotsEl.appendChild(d);
+      }
+    }
+    [...dotsEl.children].forEach((d,x)=>d.classList.toggle('on',sec.start+x===i));
+  };
+
+  const show=n=>{
+    i=Math.max(0,Math.min(n,slides.length-1));
+    slides.forEach((s,x)=>s.classList.toggle('active',x===i));
+    document.getElementById('cur').textContent=i+1;
+    updateNav();
+    const hash='#'+(i+1);
+    if(location.hash!==hash)history.replaceState(null,'',hash);
+  };
+
+  const buildOverview=()=>{
+    ov.innerHTML='';
+    slides.forEach((s,idx)=>{
+      const t=document.createElement('div'); t.className='thumb';
+      const scaler=document.createElement('div'); scaler.className='scaler';
+      const clone=s.cloneNode(true); clone.classList.add('active');
+      scaler.appendChild(clone);
+      const num=document.createElement('div'); num.className='num'; num.textContent=idx+1;
+      t.append(scaler,num);
+      t.addEventListener('click',ev=>{ev.stopPropagation();show(idx);closeOv();});
+      ov.appendChild(t);
+    });
+  };
+  const markCur=()=>[...ov.children].forEach((t,x)=>t.classList.toggle('cur',x===i));
+  const openOv=()=>{buildOverview();markCur();ov.classList.add('show');ovhint.style.display='block';ov.querySelector('.thumb.cur')?.scrollIntoView({block:'center'});};
+  const closeOv=()=>{ov.classList.remove('show');ovhint.style.display='none';};
+  const ovOpen=()=>ov.classList.contains('show');
+
+  addEventListener('keydown',e=>{
+    if(e.key==='Escape'){ovOpen()?closeOv():openOv();return;}
+    if(ovOpen())return;
+    if(['ArrowRight',' ','PageDown'].includes(e.key))show(i+1);
+    if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);
+    if(STAGE_KEYS[e.key]!==undefined)show(SECTIONS[STAGE_KEYS[e.key]].start);
+  });
+
+  document.getElementById('tot').textContent=slides.length;
+  show(slideFromHash());
+</script>
+</body>
+</html>
+</content>
+</invoke>
