@@ -2,7 +2,7 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--isolated", "--viewport-size=1280,900", "--output-dir", "/tmp/ralph-shots"]
+      "args": ["-y", "@playwright/mcp@latest", "--config", "/Users/jean-philippereid/personal/ai4good/Building ML Apps/symptomscout-versions/run-plus/playwright-mcp.config.json"]
     }
   }
 }

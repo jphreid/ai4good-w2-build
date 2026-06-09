@@ -1,0 +1,17 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "launchOptions": {
+      "headless": false,
+      "args": [
+        "--window-position=1280,0",
+        "--window-size=1280,1440"
+      ]
+    },
+    "contextOptions": {
+      "viewport": { "width": 1280, "height": 1350 }
+    }
+  },
+  "outputDir": "/tmp/ralph-shots"
+}

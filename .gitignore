@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .playwright-mcp/
+
+# stray rehearsal screenshots (cwd-relative screenshot quirk dumped these in repo root)
+/[0-9][0-9]-*.png
+/step*.png

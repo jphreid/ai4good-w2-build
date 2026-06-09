@@ -22,8 +22,19 @@
 
 set -uo pipefail
 cd "$(dirname "$0")" || exit 1
+HERE="$PWD"                     # absolute run-plus/ dir — for locating narrate.py after subshell cds
 ROOT="$(cd .. && pwd)"          # symptomscout-versions/ — where uv + .env + knowledge live
 PORT=8504
+# Mode: default = Phase A (text loop) then Phase B (UI loop). Each phase is also a
+# stand-alone clip — A9 is the text loop, A10 is the design loop — so either runs solo:
+#   ./ralph.sh        full run (A + B)
+#   ./ralph.sh a      Phase A only — the A9 text loop  (self-priming; no reset.sh needed)
+#   ./ralph.sh b      Phase B only — the A10 design loop  (self-priming; no reset.sh needed)
+MODE="full"
+case "${1:-}" in
+  a|A|--phase-a|phase-a) MODE="a"; shift ;;
+  b|B|--phase-b|phase-b) MODE="b"; shift ;;
+esac
 MAX="${1:-6}"
 SHOT_DIR="/tmp/ralph-shots"     # Playwright MCP writes screenshots here (--output-dir, user-scope config)
 
@@ -63,8 +74,20 @@ role "✍️  GENERATOR  = claude — reads the failure and makes ONE small fix"
 role "🧪 EVALUATOR  = pytest + Opus judge (text)  ·  a real browser (UI) — the judge"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PHASE A — TEXT EVALS
+# PHASE A — TEXT EVALS   (skipped in Phase-B-only mode — A9 is the text loop)
 # ══════════════════════════════════════════════════════════════════════════════
+if [ "$MODE" = "b" ]; then
+  b "PHASE-B-ONLY · the text loop is the A9 clip — opening straight into the design loop"
+  cp .pristine/agent-green.py agent.py   # proven text-GREEN baseline → polished responses
+  cp .pristine/ui.py          ui.py      # the safety-banner bug — the one thing B fixes
+  rm -rf __pycache__ evals/__pycache__
+  ok "  primed: text evals already green · only the safety-banner bug remains for the UI loop"
+else
+if [ "$MODE" = "a" ]; then
+  cp .pristine/agent.py agent.py         # plant the text bugs so the loop has red to close
+  rm -rf __pycache__ evals/__pycache__
+  ok "  primed: citation + severity rules removed → 2 red text evals for the loop to close"
+fi
 b "PHASE A · TEXT EVALS  —  pytest → fix SYSTEM prompt → repeat until green"
 
 PROMPT_A='The SymptomScout RUN++ text-eval suite has failing tests. Below is the latest
@@ -99,11 +122,27 @@ $(cat "$PYLOG")" \
     || red "  ⚠️ claude -p exited non-zero (iteration ${n})"
   if [ "$n" -eq "$MAX" ]; then red "  ⚠️ hit the ${MAX}-iteration cap on text evals."; fi
 done
+fi
+
+if [ "$MODE" = "a" ]; then
+  printf '\n'; b "DONE"
+  say "Text evals driven red→green by the agent — the requirement is now TRUE."
+  say "Making it USABLE in the UI is the A10 clip:   ./run-plus/ralph.sh b"
+  say "Reset:  ./reset.sh"
+  exit 0
+fi
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PHASE B — UI EVALS (Playwright MCP, live browser)
 # ══════════════════════════════════════════════════════════════════════════════
-b "PHASE B · UI EVALS  —  drive the live app with Playwright MCP → fix ui.py → re-verify"
+b "PHASE B · UI EVALS  —  design is checkable too"
+say "A text eval can't SEE the rendered page. So the agent opens a REAL browser and"
+say "verifies what a PERSON actually sees — and when a design property is wrong, it"
+say "FIXES the UI and re-checks live. Three properties are on trial here:"
+say "   U1 · the sources are visible      → people can verify, not just trust"
+say "   U2 · a safety banner is on screen  → it helps prepare, it does NOT diagnose"
+say "   U3 · that banner PERSISTS          → still there after the next turn"
+printf '\n'
 
 say "starting the app headless on :${PORT}"
 dim "  \$ uv run streamlit run run-plus/ui.py --server.port ${PORT} --server.headless true"
@@ -118,17 +157,9 @@ done
 ok "  app up → http://localhost:${PORT}"
 
 printf '\n'
-b "  👀 NOW WATCH THE BROWSER WINDOW — the EVALUATOR is a real person now"
-say "✍️  GENERATOR (claude) drives Chrome and checks what a USER actually SEES — step by step:"
-say "   1 · open the page at :${PORT}"
-say "   2 · type the PCOS symptoms and send"
-say "   3 · open 'Sources used' to check the citations show          (U1)"
-say "   4 · scroll up, look for a prominent safety banner — MISSING   (U2/U3 red)"
-say "   5 · edit run-plus/ui.py to add a persistent banner"
-say "   6 · reload, then send a SECOND message"
-say "   7 · confirm the banner is STILL there after the new turn      (U3)"
-say "   8 · report UI-GREEN once the page is right"
-dim "  (terminal stays quiet while it works the browser; its report prints here when done)"
+b "  👀 NOW WATCH THE BROWSER — the evaluator is a real person now"
+say "Below: every move the agent makes, and every screenshot it judges, live."
+dim "  🧠 = what it concludes   🖱⌨️🌐✏️ = what it does   📸 = what it sees"
 
 PROMPT_B="The SymptomScout RUN++ app is running at http://localhost:${PORT}.
 
@@ -142,31 +173,43 @@ is your visible evidence and it is REQUIRED. Do NOT use the page/accessibility s
 place of it: the snapshot is how you navigate, the screenshot (browser_take_screenshot) is
 the proof a human reviews afterward. Every numbered step below ends in a screenshot.
 
-CRITICAL — name every screenshot so it reads as a CONCLUSION. Pass the 'filename' argument
-to browser_take_screenshot in the form NN-what-this-shows-and-what-it-means.png, where NN
-is the step number (01, 02, …) and the rest is a short kebab-case sentence stating what the
-screenshot reveals and the decision it drives — i.e. the information YOU are acting on.
-Examples: 03-sources-panel-lists-3-citations-U1-passes.png,
-04-top-of-page-has-no-safety-banner-this-is-the-red.png,
-06-banner-still-visible-after-second-turn-U3-passes.png. The filename IS the caption a
-human will read under the image, so make it specific and true to what the shot proves.
+CRITICAL — every screenshot filename MUST be an ABSOLUTE path under /tmp/ralph-shots/ , and
+must read as a CONCLUSION. Pass the 'filename' argument to browser_take_screenshot in the
+form /tmp/ralph-shots/NN-what-this-shows-and-what-it-means.png , where NN is the step number
+(01, 02, …) and the rest is a short kebab-case sentence stating what the screenshot reveals
+and the decision it drives — i.e. the information YOU are acting on. (A bare or relative
+filename is saved to the wrong directory and will NOT be shown — the absolute path is required.)
+Examples: /tmp/ralph-shots/03-sources-panel-lists-3-citations-U1-passes.png ,
+/tmp/ralph-shots/04-top-of-page-has-no-safety-banner-this-is-the-red.png ,
+/tmp/ralph-shots/06-banner-still-visible-after-second-turn-U3-passes.png .
+The filename IS the caption shown under the image, so make it specific and true.
+
+NARRATE as you go: before each action say in ONE short sentence what you are about to do,
+and right AFTER each screenshot say in ONE sentence what you SEE in it and what it means for
+the check (pass/fail) — a person is watching this stream live and reading your reasoning.
+
+SCROLLING — do NOT try to scroll with window.scrollTo or browser_evaluate. This app scrolls
+inside an inner Streamlit container, so JS window-scrolling does nothing and just wastes time.
+To inspect the TOP of the page (the safety banner), take a FULL-PAGE screenshot instead: call
+browser_take_screenshot with fullPage set to true. Never use browser_evaluate.
 
 1. Open http://localhost:${PORT}. Take a screenshot.
 2. Click the chat input, type, and send:
    I'm 28. Irregular periods for 3 years, weight gain, and adult acne.
-   Wait for the full answer to render, then slowly scroll down through it. Screenshot.
+   Wait for the full answer to render, then take a FULL-PAGE screenshot (fullPage: true).
 3. U1 — find and click 'Sources used' to expand it; confirm at least one source is listed. Screenshot.
-4. U2/U3 — scroll back to the TOP and look for a PROMINENT safety banner (a red/alert box,
-   NOT a small grey caption) that says it does not diagnose and to call 911 in an emergency.
-   On the baseline there is NONE — confirm it is missing. Screenshot.
+4. U2/U3 — take a FULL-PAGE screenshot (fullPage: true) and look at the TOP of the page for a
+   PROMINENT safety banner (a red/alert box, NOT a small grey caption) that says it does not
+   diagnose and to call 911 in an emergency. On the baseline there is NONE — confirm it is missing.
 5. Fix it: edit run-plus/ui.py to add a persistent, prominent banner near the top, rendered on
    EVERY run, e.g.
    st.error(\"⚠️ SymptomScout helps you prepare — it does not diagnose. If this might be an
    emergency, call 911 now.\").
-6. Wait ~3s for Streamlit to hot-reload, then reload the page. Scroll to the top and confirm the
-   banner is now visible. Screenshot.
+6. Wait ~3s for Streamlit to hot-reload, then reload the page and take a FULL-PAGE screenshot
+   (fullPage: true). Confirm the banner is now visible at the top.
 7. U3 — send a SECOND message: What questions should I ask my doctor at the appointment?
-   Wait for the answer, scroll to the top, and confirm the SAME banner is STILL visible. Screenshot.
+   Wait for the answer, then take a FULL-PAGE screenshot (fullPage: true) and confirm the SAME
+   banner is STILL visible at the top.
 8. When U1, U2 and U3 all hold in the live browser, print exactly:  UI-GREEN
    Otherwise print:  UI-RED: <what still fails>"
 
@@ -174,46 +217,38 @@ rm -rf "$SHOT_DIR" && mkdir -p "$SHOT_DIR"   # start clean so we only show this 
 # --model pins Sonnet for the browser-driving: it's mechanical step-by-step work
 # over large accessibility snapshots, where the default (heavier) model spends
 # minutes per click. Sonnet drives Playwright reliably and far faster.
-UIOUT="$(cd "$ROOT" && claude -p "$PROMPT_B" \
+# Stream the agent's run LIVE through narrate.py: it reads claude's event stream
+# (--output-format stream-json) and prints, as they happen, claude's reasoning,
+# each action, and each screenshot rendered inline (chafa) with its caption — so
+# the terminal is never silent. narrate.py writes the final report to
+# /tmp/ralph-ui-result.txt for the UI-GREEN check below. --strict-mcp-config +
+# run-plus/.mcp.json pin the Playwright config (window position, output dir).
+rm -f /tmp/ralph-ui-result.txt
+( cd "$ROOT" && claude -p "$PROMPT_B" \
+    --output-format stream-json --verbose \
     --model claude-sonnet-4-6 \
     --permission-mode bypassPermissions \
     --mcp-config run-plus/.mcp.json --strict-mcp-config \
-    --allowedTools "Read" "Edit" "mcp__playwright" 2>/dev/null )"
-printf '\n'; b "  ✍️  GENERATOR's report back from the browser:"
-printf '%s\n' "$UIOUT" | tail -n 20
+    --allowedTools "Read" "Edit" "mcp__playwright" 2>/dev/null ) \
+  | python3 "$HERE/narrate.py"
+UIOUT="$(cat /tmp/ralph-ui-result.txt 2>/dev/null)"
 
-# ── filmstrip: show what claude actually SAW, inline, each with the CONCLUSION it
-#    drew. The agent names every screenshot `NN-what-this-shows-and-means.png`, so
-#    the filename IS the caption — we render image + that conclusion, in order, to
-#    make visible what each shot told the agent to act on. ──
-printf '\n'; b "  📸 What claude SAW — each shot, and the conclusion it drew from it:"
-SHOTS="$(ls -1tr "$SHOT_DIR"/*.png "$SHOT_DIR"/*.jpeg "$SHOT_DIR"/*.jpg 2>/dev/null)"
-if [ -z "$SHOTS" ]; then
-  dim "  (no screenshots in $SHOT_DIR — did the agent skip them? checks still ran in the browser)"
-elif command -v chafa >/dev/null 2>&1; then
-  printf '%s\n' "$SHOTS" | while IFS= read -r f; do
-    name="$(basename "$f")"; name="${name%.*}"
-    case "$name" in
-      [0-9]*-*) step="${name%%-*}"; rest="${name#*-}";;   # NN-conclusion → "NN" + "conclusion"
-      *)        step="•";          rest="$name";;          # agent didn't number it
-    esac
-    caption="$(printf '%s' "$rest" | sed 's/[-_]/ /g')"
-    printf '\n   \033[1;36m📸 shot %s — what this told claude:\033[0m  \033[1m%s\033[0m\n' "$step" "$caption"
-    chafa --size=78x22 "$f"
-    say "↳ claude read that off the page and acted on it before moving on."
-  done
-else
-  say "chafa not installed (brew install chafa for inline images) — opening the folder instead"
-  open "$SHOT_DIR"
-fi
+printf '\n'; dim "  $(ls "$SHOT_DIR"/*.png 2>/dev/null | wc -l | tr -d ' ') screenshots saved to $SHOT_DIR (shown live above)."
 
 if printf '%s' "$UIOUT" | grep -q "UI-GREEN"; then
-  ok "  ✅ UI GREEN — Playwright confirms the safety banner renders and persists."
+  ok "  ✅ UI GREEN — verified in a real browser: sources visible · safety banner present · banner persists."
+  say "Same red→green loop as the text evals — now on what the USER actually sees."
+  say "That's the point: design is checkable too. A requirement isn't done when a test"
+  say "passes; it's done when a person can act on it — and that's a checkable property."
 else
   red "  🔴 UI still red — see the agent's notes above."
 fi
 
 # ══════════════════════════════════════════════════════════════════════════════
 b "DONE"
-say "Text evals + UI checks driven red→green by the agent, end to end."
+if [ "$MODE" = "b" ]; then
+  say "The text loop made the requirement TRUE (that was the A9 clip); this made it USABLE."
+else
+  say "One loop, two evaluators: pytest judged the TEXT, a real browser judged the DESIGN."
+fi
 say "Reset everything with:  ./reset.sh"

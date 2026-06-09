@@ -57,15 +57,15 @@ if user_input := st.chat_input("Describe your symptoms..."):
                 st.markdown("**Curated knowledge base:**")
                 for name in result["retrieved"]:
                     st.markdown(f"- `{name}`")
-            if result["pubmed_used"]:
+            good = [r for r in result["pubmed_results"] if "error" not in r]
+            if good:
                 st.markdown("**PubMed (live):**")
-                for r in result["pubmed_results"]:
-                    if "error" in r:
-                        st.markdown(f"- _{r['error']}_")
-                    else:
-                        st.markdown(f"- [{r['title']}]({r['url']}) — {r.get('source', '')}")
-            else:
+                for r in good:
+                    st.markdown(f"- [{r['title']}]({r['url']}) — {r.get('source', '')}")
+            elif not result["pubmed_used"]:
                 st.caption("The agent didn't need a live PubMed search this time.")
+            # if PubMed was tried but returned nothing (transient API hiccup), show
+            # no error row — the curated knowledge base stands on its own.
 
         st.download_button(
             "⬇️ Download prep sheet",

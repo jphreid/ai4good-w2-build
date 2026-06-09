@@ -36,8 +36,10 @@ def search_pubmed(query: str, max_results: int = 3) -> list[dict]:
             }
             for p in pmids
         ]
-    except Exception as e:  # network/throttle — the agent should carry on without it
-        return [{"error": f"PubMed lookup failed: {e}"}]
+    except Exception:  # network/throttle/5xx — degrade silently; the curated KB carries it
+        # Return nothing rather than an error row: a transient NCBI 500 must not show
+        # up as "PubMed lookup failed" in the Sources panel during the live demo.
+        return []
 
 
 # The tool definition the model sees.
