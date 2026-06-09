@@ -62,9 +62,9 @@ PHASE B · UI EVALS     app starts on :8504
 Run `./reset.sh` then `./ralph.sh` with the terminal (and, in Phase B, the Chromium
 window) on screen. Speed up the pytest/judge waits in edit; keep the red→green flips and
 the browser-driving full-speed. A9 = Phase A; A10 = Phase B. Narration is in
-`../../demo-runsheet.md` (clip shot-lists). Reset after.
+`../workshop/w2/demo-runsheet.md` (clip shot-lists). Reset after.
 
-> Simpler text-only variant (no UI/Playwright) for the scaffold's citation eval:
-> `Building ML Apps/scaffold/scripts/ralph.sh`.
+> *(JP-side only — not in this clone:)* a simpler text-only A9 variant lives in JP's
+> separate scaffold repo at `scaffold/scripts/ralph.sh`.
 </content>
 </invoke>

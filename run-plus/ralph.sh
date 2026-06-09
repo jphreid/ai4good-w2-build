@@ -142,13 +142,13 @@ is your visible evidence and it is REQUIRED. Do NOT use the page/accessibility s
 place of it: the snapshot is how you navigate, the screenshot (browser_take_screenshot) is
 the proof a human reviews afterward. Every numbered step below ends in a screenshot.
 
-CRITICAL — name every screenshot so it reads as a CONCLUSION. Pass the `filename` argument
-to browser_take_screenshot in the form `NN-what-this-shows-and-what-it-means.png`, where NN
+CRITICAL — name every screenshot so it reads as a CONCLUSION. Pass the 'filename' argument
+to browser_take_screenshot in the form NN-what-this-shows-and-what-it-means.png, where NN
 is the step number (01, 02, …) and the rest is a short kebab-case sentence stating what the
 screenshot reveals and the decision it drives — i.e. the information YOU are acting on.
-Examples: `03-sources-panel-lists-3-citations-U1-passes.png`,
-`04-top-of-page-has-no-safety-banner-this-is-the-red.png`,
-`06-banner-still-visible-after-second-turn-U3-passes.png`. The filename IS the caption a
+Examples: 03-sources-panel-lists-3-citations-U1-passes.png,
+04-top-of-page-has-no-safety-banner-this-is-the-red.png,
+06-banner-still-visible-after-second-turn-U3-passes.png. The filename IS the caption a
 human will read under the image, so make it specific and true to what the shot proves.
 
 1. Open http://localhost:${PORT}. Take a screenshot.
@@ -177,6 +177,7 @@ rm -rf "$SHOT_DIR" && mkdir -p "$SHOT_DIR"   # start clean so we only show this 
 UIOUT="$(cd "$ROOT" && claude -p "$PROMPT_B" \
     --model claude-sonnet-4-6 \
     --permission-mode bypassPermissions \
+    --mcp-config run-plus/.mcp.json --strict-mcp-config \
     --allowedTools "Read" "Edit" "mcp__playwright" 2>/dev/null )"
 printf '\n'; b "  ✍️  GENERATOR's report back from the browser:"
 printf '%s\n' "$UIOUT" | tail -n 20

@@ -2,7 +2,7 @@
 
 > **Note for this bundle:** paths below like `Building ML Apps/symptomscout-versions/` and `Building ML Apps/scaffold/` are from JP's authoring monorepo. In **your** clone of this repo, the `symptomscout-versions/` part **is the repo root** — drop that prefix (e.g. `run-plus/`, `walk/ui.py`, `run/ui.py` are all at the root). The `scaffold/` is JP's separate eval-side repo; you don't need it (the `/design-critic` skill it uses is bundled here in `.claude/skills/`). Repo-relative commands are in **[`../ROHAN-BRIEF.md`](../ROHAN-BRIEF.md) §6**.
 
-**What this is.** The beat-by-beat for the **led demo** in Workshop 2 ("Building ML Apps", June 10). Co-led: **JP** drives the generator/eval side (crawl→walk), **Rohan D'Souza** (senior UI designer, Microsoft; remote from Toronto) drives the design side (walk→run UI). 90 min = ~65 content + ~25 Q&A. This file is what you rehearse against and what you run on the day. Mirrors the W1 sheet (`../demo-sandbox/README.md`).
+**What this is.** The beat-by-beat for the **led demo** in Workshop 2 ("Building ML Apps", June 10). Co-led: **JP** drives the generator/eval side (crawl→walk), **Rohan D'Souza** (senior UI designer, Microsoft; remote from Toronto) drives the design side (walk→run UI). 90 min = ~65 content + ~25 Q&A. This file is what you rehearse against and what you run on the day.
 
 **Two repos are in play:**
 - `Building ML Apps/scaffold/` — the eval side JP drives. The citation eval fails by design; JP fixes it live. Reset with `./reset-demo.sh`.
@@ -117,13 +117,15 @@ Expected: `5 passed`.
 
 ## Rohan's beats (0:30–1:00) — walk → run UI build
 
-Rohan opens with **design for uncertainty** (new material, seeded by `research/ai-ux-fails-and-best-practices.md` — over-reliance, satisfaction≠decision-quality, error recovery, onboarding/mental-model, honest feedback loops). Then he makes the baton concrete by evolving the **walk** UI into the **run** UI.
+Rohan opens with **design for uncertainty** (new material — over-reliance, satisfaction≠decision-quality, error recovery, onboarding/mental-model, honest feedback loops). *(The seed research, `research/ai-ux-fails-and-best-practices.md`, lives in JP's monorepo and is **not in this clone** — the topic list + the on-stage citations you need travel in `../ROHAN-BRIEF.md` §2; ask JP for the full research doc if you want it.)* Then he makes the baton concrete by evolving the **walk** UI into the **run** UI.
 
 ### The walk→run guided diff (A4)
 
-**Before/after is already running:** walk on **8502**, run on **8503**. Same PCOS prompt in both. Walk buries the citation in prose; run surfaces it. The live build adds three affordances to the walk UI. (The `run/agent.py` already returns the metadata dict the UI needs — `{text, retrieved, pubmed_used, pubmed_results}` — so these are UI-layer changes.)
+**Before/after is already running:** walk on **8502**, run on **8503**. Same PCOS prompt in both. Walk buries the citation in prose; run surfaces it.
 
-**Minimum live moment (the one to type live):** the **sources panel**. It's the baton made visible.
+> **Where the live edit happens — read this.** Type into **`run/ui.py`**, not walk. `run/ui.py` is paired with `run/agent.py`, which returns the metadata dict the panel reads — `{text, retrieved, pubmed_used, pubmed_results}`. `walk/agent.py` returns a plain **string** (no dict), so the sources-panel code below would crash if typed into `walk/ui.py`. The **walk app on 8502 is the visual "before"** you show side-by-side — it is *not* a file you type into. The panel already exists in `run/ui.py` (~`run/ui.py:48-66`); to demo the live build, comment it out before the session and type it back in.
+
+**Minimum live moment (the one to type live, into `run/ui.py`):** the **sources panel**. It's the baton made visible.
 ```python
 # after st.markdown(reply), inside the assistant chat_message block:
 with st.expander("Sources used"):
@@ -164,15 +166,15 @@ st.download_button(
 ```
 Tie each to the research: the sources panel counters **over-reliance** (the user can verify, not just trust); "how to read this" is **onboarding / mental-model setting**; the download is the **manual fallback / take-it-to-a-human** path. None of this repeats W1.
 
-> **Reset Rohan's live edit between rehearsals:** `cd "Building ML Apps/symptomscout-versions" && git checkout run/ui.py` (or whichever file he typed into).
+> **Reset Rohan's live edit between rehearsals:** from the repo root, `git checkout run/ui.py`.
 
 ### `/design-critic` live (A7)
-In Claude Code, run the design critic on the **bare** scaffold UI to show "design is checkable too":
+In Claude Code (launched from the repo root), run the design critic on the **bare "before" UI** to show "design is checkable too":
 ```text
 /design-critic
-Review Building ML Apps/scaffold/app/ui.py
+Review walk/ui.py
 ```
-Expected: the 5-check review (confidence display · graceful degradation · plain language · accessibility · humane refusal), citing Google PAIR + Microsoft HAX. Use it to show the bare UI *fails* several checks that the run UI passes — closing the loop on "design has a rubric, just like evals."
+Expected: the 5-check review (confidence display · graceful degradation · plain language · accessibility · humane refusal), citing Google PAIR + Microsoft HAX. Use it to show the bare `walk` UI *fails* several checks that the `run` UI passes — closing the loop on "design has a rubric, just like evals." *(The skill ships in this repo at `.claude/skills/design-critic/`.)*
 
 > **Clip A10 plays in this section** (~90s): an agent driving the *rendered* run app via Playwright MCP to verify design properties hold (sources panel renders, disclaimer persists across turns, emergency escalation is unmissable). See shot-list. **Raise with Rohan** whether he'd rather do one live Playwright moment instead of the clip.
 
@@ -212,19 +214,20 @@ Don't debug live for more than a minute.
 | Rohan's local env fails | JP screen-shares the running 8502/8503 apps; Rohan narrates over them. |
 | Streamlit port in use | `--server.port 8512/8522/8532` and note the new tabs. |
 | API / network down | Play the clips (A9, A10) and narrate the rehearsed run; the *concepts* still land. |
-| `/design-critic` not found | The 5 critics live in `scaffold/.claude/skills/` locally. If demoing from a clean clone, they must be pushed first (open dependency — see W2-rebuild-plan.md). |
+| `/design-critic` not found | It ships in this repo at `.claude/skills/design-critic/`. Confirm you launched Claude Code from the **repo root** (skills load from the cwd's `.claude/`). |
 
 ---
 
 ## Reset between rehearsals
 ```bash
-cd "Building ML Apps/scaffold" && ./reset-demo.sh
-cd "Building ML Apps/symptomscout-versions" && git checkout .   # undo any live UI edits
+# Rohan's side (this repo), from the repo root:
+git checkout run/ui.py            # undo the live sources-panel edit
+# JP's side (his separate scaffold repo — not in this clone):
+#   cd <scaffold> && ./reset-demo.sh
 ```
 
 ## Files touched live
-- `scaffold/app/agent.py` — JP adds the one citation line to `SYSTEM` (reset restores it).
-- `symptomscout-versions/run/ui.py` (or walk/ui.py) — Rohan types the sources-panel block (git-restore after).
-- `scaffold/app/ui.py` — read-only target of `/design-critic` (not edited).
+- **`run/ui.py`** — Rohan types the sources-panel block here (git-restore after). *This is the only file Rohan edits live.*
+- *(JP-side, separate scaffold repo:)* `app/agent.py` — JP adds the one citation line to `SYSTEM`; `app/ui.py` — read-only target of his `/design-critic` pass.
 
 Do not pre-edit these; the changes should happen live.

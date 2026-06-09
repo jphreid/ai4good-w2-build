@@ -43,7 +43,7 @@ W1 also **previewed `/design-critic`** and told trainees they would *run it* in 
 
 > **⛔ Do not re-teach these.** Name them as known ("you saw this June 1") and move past them. Your section is the **layer beyond** W1 — the failures that live in the *interface*, not the model. If you re-explain confidence display or graceful degradation, you lose the room and your time.
 
-**Your new ground** (seeded by research, not in W1): over-reliance / automation bias, *satisfaction ≠ decision quality*, onboarding & mental-models, honest feedback loops, humane refusal. Evidence anchor you can use: wrong AI advice makes a wrong human decision **~26% more likely** — so good interface design is harm reduction, not taste.
+**Your new ground** (seeded by research, not in W1): over-reliance / automation bias, *satisfaction ≠ decision quality*, onboarding & mental-models, honest feedback loops, humane refusal. Evidence anchor you can use: wrong AI advice makes a wrong human decision **~26% more likely** — so good interface design is harm reduction, not taste. *(⚠️ Verify before you put this stat on a slide — confirm the exact figure + source with JP in the prep call. The seed research lives in JP's monorepo, not this clone.)*
 
 ---
 
@@ -79,7 +79,7 @@ JP teaches the **kitchen metaphor**: the model is the **chef** (rented, brillian
 This deck carries only **two framing slides** for your 30 minutes (16 = section divider, 17 = `/design-critic`); **your own failure/demo slides run live between them.** Full spoken beats: `w2/speaker-say.md` (slides 16–18); live mechanics: `w2/demo-runsheet.md` ("Rohan's beats").
 
 - **Slide 16 — "We made it work. Now make it *work better*."** Reframe from *works* (passes the evals) to *works better* (a scared person can use it). Name W1 foundations as known, then go past them. *(Steve Jobs "design is how it works" is in your spoken notes — verbal only, not on the slide.)*
-- **Your live build (walk → run):** evolve the **walk** UI (buried citation) into the **run** UI. The one moment to **type live** is the **~8-line sources panel** — the baton made visible: the buried citation becomes a checkable list. Two more affordances (already in `run/ui.py`, show as diff): a **"How to read this"** expander (onboarding / mental-model = W1 confidence display made real) and a **"Download prep sheet"** button (take-it-to-a-human / manual fallback). Each maps to a research finding — sources panel ↔ over-reliance; "how to read this" ↔ onboarding; download ↔ honest hand-off. Exact code + reset commands are in `w2/demo-runsheet.md`.
+- **Your live build (walk → run):** the **walk** app (buried citation) is the visual "before" shown side-by-side; you build the "after" by typing into **`run/ui.py`** (its `run/agent.py` returns the metadata dict the panel needs — `walk` returns a plain string, so don't type into walk). The one moment to **type live** is the **~8–12-line sources panel** — the baton made visible: the buried citation becomes a checkable list. Two more affordances (already in `run/ui.py`, show as diff): a **"How to read this"** expander (onboarding / mental-model = W1 confidence display made real) and a **"Download prep sheet"** button (take-it-to-a-human / manual fallback). Each maps to a research finding — sources panel ↔ over-reliance; "how to read this" ↔ onboarding; download ↔ honest hand-off. Exact code + reset commands are in `w2/demo-runsheet.md`.
 - **Slide 17 — `/design-critic`:** the close. Design has a **rubric too** — 5 checks (confidence display · graceful degradation · plain language · accessibility · humane refusal), citing **Google PAIR + Microsoft HAX**. The first two are W1 (name-check); spend your airtime on the new three. Run it on the bare UI and watch it **fail** the checks the run UI passes. *This is the W1 promise, now kept.* Symmetry with JP's eval loop: **design is checkable, just like evals.**
 - **Slide 18 — Clip A10** (optional close, see §5).
 
@@ -93,7 +93,7 @@ Both clips are the **same autonomous loop** — the harness running *itself* —
 
 ### Clip A9 — the autonomous text loop *(plays in JP's Act 1, slide 10)*
 - **Status: RECORDED.** The MP4 is `recordings/Clip A9.mov` (~89s, H.264) and is already wired into slide 10 of the bundled deck — it plays inline (click ▶; JP narrates over it).
-- **What it shows:** Claude Code, hands-free, runs `pytest` → reads the judge's reason on a red eval → edits the **system prompt** in `agent.py` → re-runs → **green**, and stops. The manual version of exactly what JP just did by hand.
+- **What it shows:** Claude Code, hands-free, runs `pytest` → reads the judge's reason on a red eval → edits the **system prompt** in `agent.py` → re-runs → **green**, and stops. Same red→green discipline JP just ran by hand. *(Detail: run-plus starts with 2 planted red text evals — 3 pass / 2 fail — and drives both green, whereas JP's live scaffold demo fixes a single eval, 4→5. Same loop, slightly different starting count.)*
 - **To re-record / regenerate:** `cd run-plus && ./reset.sh && ./ralph.sh` — Phase A is A9. Phase A restricts the agent to Read+Edit (bash owns pytest), so it's fast and can't wander. Speed up the pytest/judge waits in edit; keep the red→green flip full-speed.
 - **Attribution to say out loud:** the "run-the-agent-in-a-loop-until-done" framing is the **"Ralph loop" — community / Geoffrey Huntley, NOT Anthropic.** (The generator/evaluator split *is* Anthropic — keep the two credits distinct.)
 
@@ -145,8 +145,7 @@ cd run-plus && ./reset.sh && ./ralph.sh
 
 | Path | What |
 |---|---|
-| `ROHAN-BRIEF.md` | **this file** — start here |
-| `README.md` | the folder index / orientation |
+| `ROHAN-BRIEF.md` | **this file** — your single home base |
 | `w2/workshop2-slides.html` | the W2 deck (open in a browser; A9 clip plays inline on slide 10) |
 | `w2/storyboard.md` | per-slide layout + build cues |
 | `w2/speaker-say.md` | the spoken script, beat by beat |

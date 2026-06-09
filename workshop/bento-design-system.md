@@ -1,6 +1,6 @@
 # Bento deck — template & design system
 
-**The single source of truth for building the AI4Good bento decks** (`workshop1-slides.html`). Layout, type, colour, components, behaviour, and the CSS architecture all live here. CLAUDE.md points to this file; don't duplicate these rules elsewhere. The per-slide storyboard (`slides-with-notes.md`) only notes what *differs* from these defaults.
+**The single source of truth for building the AI4Good bento decks** (`w1/workshop1-slides.html`, `w2/workshop2-slides.html`). Layout, type, colour, components, behaviour, and the CSS architecture all live here. CLAUDE.md points to this file; don't duplicate these rules elsewhere. The per-slide storyboards (`w1/storyboard.md`, `w2/storyboard.md`) only note what *differs* from these defaults.
 
 ---
 
@@ -110,5 +110,5 @@ This collapses per-stage override blocks (e.g. hand-written `.stage2 …{color:v
 
 ## 9. Authoring workflow
 
-- Edit **`workshop1-slides.html`** directly (it's the rendered deck). Keep the **`slides-with-notes.md`** storyboard in sync — each slide there carries a layout sketch, on-slide content, **UI:** (only what differs from this template), **Say:**, **Build:**.
-- The W2 deck (`Building ML Apps/workshop2-slides.html`) is **also built on this template** — same `:root`/chrome/nav, with a two-act `--accent` flip (blue=JP, violet=Rohan) and two W2-local components (`.clip`, `.demo`). Keep its storyboard (`Building ML Apps/slides-with-notes.md`) in sync. *(The old W2 Marp deck is retired → `_deprecated/W2-marp-deck/`.)*
+- Edit the deck HTML directly (it's the rendered deck). Keep the matching **`storyboard.md`** in sync — each slide there carries a layout sketch, on-slide content, **UI:** (only what differs from this template), **Say:**, **Build:**.
+- The W2 deck (**`w2/workshop2-slides.html`**) is **also built on this template** — same `:root`/chrome/nav, with a two-act `--accent` flip (blue=JP, violet=Rohan) and two W2-local components (`.clip`, `.demo`). Keep its storyboard (**`w2/storyboard.md`**) in sync.

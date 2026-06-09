@@ -1,6 +1,6 @@
 ---
 name: design-critic
-description: Make the app usable and safe for a real person — audit the UI and response format, or generate a UI that handles uncertainty. Dual-mode — AUDIT reviews app/ui.py and the output shape for confidence display, graceful degradation, plain language, accessibility, and humane refusal, then writes design-review.md; GENERATE builds a ui.py that shows uncertainty and bails gracefully. Run alongside safety-critic — the UX choice is the safety choice.
+description: Make the app usable and safe for a real person — audit the UI and response format, or generate a UI that handles uncertainty. Dual-mode — AUDIT reviews the UI file you name (default run/ui.py, or walk/ui.py for the bare "before") and the output shape for confidence display, graceful degradation, plain language, accessibility, and humane refusal, then writes design-review.md; GENERATE builds a ui.py that shows uncertainty and bails gracefully. Run alongside safety-critic — the UX choice is the safety choice.
 ---
 
 # design-critic — make it usable and safe for a real person
@@ -14,8 +14,10 @@ Frames you draw on:
 
 This skill and `safety-critic` are two views of one thing — **the UX choice is the safety choice.** Where a design fix is also a safety fix (a missing emergency bail-out, a refusal that reads coldly), say so and run them together. You shape the surface; you don't rewire the app (`eng-critic`) or write the safety report (`safety-critic`).
 
+> **On this co-lead kit, only `design-critic` ships.** References below to sibling critics (`safety-critic`, `eng-critic`, `close-a-red-eval`) are advisory — they name *who would own a fix*, not skills you can invoke here. Just call out the cross-cutting fix in your review.
+
 Two modes:
-- **AUDIT** — a UI exists → run the five checks against `app/ui.py` and the response format, then write `design-review.md`.
+- **AUDIT** — a UI exists → run the five checks against the UI file you name (default `run/ui.py`, or `walk/ui.py` for the bare "before") and the response format, then write `design-review.md`.
 - **GENERATE** — no UI yet → build a `ui.py` that does confidence display + graceful degradation from the start.
 
 ---
@@ -36,7 +38,7 @@ Two modes:
 
 ## AUDIT mode — write design-review.md
 
-1. Read `app/ui.py` and a real response (or the documented response format). Run the five checks; where a check needs runtime, load the app headless (`streamlit.testing.v1.AppTest`) and inspect rendered state.
+1. Read the UI file you were given (default `run/ui.py`) and a real response (or the documented response format). Run the five checks; where a check needs runtime, load the app headless (`streamlit.testing.v1.AppTest`) and inspect rendered state.
 2. Write `design-review.md`:
    - **Verdict** (one line): can a real, non-expert user tell when this is wrong and do something about it?
    - **Checklist** — check · finding · proof (`ui.py:line` or rendered state) · fix · owner.
